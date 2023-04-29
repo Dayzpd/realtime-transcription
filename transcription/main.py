@@ -15,6 +15,7 @@ CURRENT_TRANSCRIPTION = TRANSCRIPTION_FOLDER / 'current.json'
 WHISPER_MODEL = os.environ['WHISPER_MODEL']
 logging.info(f'Whisper Model: {WHISPER_MODEL}')
 model = whisper.load_model(WHISPER_MODEL)
+logging.warning('What is up my boy.')
 
 class AudioSegmentHandler(FileSystemEventHandler):
     def on_created(self, event):
@@ -37,6 +38,8 @@ class AudioSegmentHandler(FileSystemEventHandler):
         if CURRENT_TRANSCRIPTION.is_file():
 
             CURRENT_TRANSCRIPTION.unlink()
+
+        mp3_file.unlink()
 
         CURRENT_TRANSCRIPTION.write_text(json.dumps(transcription, indent=4))
 

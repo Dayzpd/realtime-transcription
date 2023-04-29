@@ -1,0 +1,19 @@
+.grid-layout
+{
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 1fr 8fr;
+  gap: 0px 0px;
+  grid-template-areas: 
+    "."
+    "."
+    ".";
+
+  max-height: 100vh;
+  min-height: 100vh;
+}
+
+.bg-ctk-dark
+{
+  background: linear-gradient(rgba(54,57,86,1),rgba(54,57,86,1));
+}

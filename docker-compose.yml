@@ -2,30 +2,39 @@ version: '3.1'
 services:
   nginx:
     image: tiangolo/nginx-rtmp
+    volumes:
+      - './nginx.conf:/etc/nginx/nginx.conf'
+      - './app:/www/data'
     ports:
+      - '80:80'
       - '1935:1935'
-    restart: always
+    restart: unless-stopped
+    depends_on:
+      - api
+
   ffmpeg:
     image: linuxserver/ffmpeg
     command: -i rtmp://nginx:1935/live -vn -acodec libmp3lame -f segment -segment_time 5 -reset_timestamps 1 -segment_format mp3 /data/output_%04d.mp3
     volumes:
       - '${SEGMENT_VOLUME_DIR}:/data'
-    restart: always
+    restart: unless-stopped
     depends_on:
       - nginx
+      
   transcribe:
     image: silbervision/transcribe
     build:
       context: ./transcription
     command: python main.py
     environment:
-      WHISPER_MODEL: small
+      WHISPER_MODEL: ${WHISPER_MODEL}
     volumes:
+      - './transcription/main.py:/app/main.py'
       - '${SEGMENT_VOLUME_DIR}:/app/data'
       - '${TRANSCRIPTION_VOLUME_DIR}:/app/transcription'
-    restart: always
-    depends_on:
-      - ffmpeg
+      - '${WHISPER_VOLUME_DIR}:/root/.cache/whisper/'
+    restart: unless-stopped
+    
   api:
     image: silbervision/api
     build:
@@ -36,18 +45,5 @@ services:
       - '${TRANSCRIPTION_VOLUME_DIR}:/app/transcription'
     ports:
       - '8000:8000'
-    restart: always
-    depends_on:
-      - transcribe
-  app:
-    image: silbervision/app
-    build:
-      context: ./app
-    command: python -m app
-    volumes:
-      - './app/app:/app/app'
-    ports:
-      - '8001:8001'
-    restart: always
-    depends_on:
-      - api
+    restart: unless-stopped
+

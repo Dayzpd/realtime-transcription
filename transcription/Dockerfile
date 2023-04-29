@@ -17,4 +17,4 @@ RUN python -m pip install --no-cache-dir -r ./requirements.txt
 RUN mkdir data
 RUN mkdir transcription
 
-COPY ./main.py .
+#COPY ./main.py .
