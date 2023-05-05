@@ -14,35 +14,25 @@ services:
 
   ffmpeg:
     image: linuxserver/ffmpeg
-    command: -i rtmp://nginx:1935/live -vn -acodec libmp3lame -f segment -segment_time 5 -reset_timestamps 1 -segment_format mp3 /data/output_%04d.mp3
+    command: -i rtmp://nginx:1935/live -vn -acodec libmp3lame -f segment -segment_time 5 -reset_timestamps 1 -segment_format mp3 /data/%05d.mp3
     volumes:
       - '${SEGMENT_VOLUME_DIR}:/data'
     restart: unless-stopped
     depends_on:
       - nginx
-      
-  transcribe:
-    image: silbervision/transcribe
+    
+  api:
+    image: transcription-api
     build:
-      context: ./transcription
+      context: ./api
     command: python main.py
     environment:
       WHISPER_MODEL: ${WHISPER_MODEL}
     volumes:
-      - './transcription/main.py:/app/main.py'
+      - './api/main.py:/app/main.py'
       - '${SEGMENT_VOLUME_DIR}:/app/data'
       - '${TRANSCRIPTION_VOLUME_DIR}:/app/transcription'
       - '${WHISPER_VOLUME_DIR}:/root/.cache/whisper/'
-    restart: unless-stopped
-    
-  api:
-    image: silbervision/api
-    build:
-      context: ./api
-    command: python main.py
-    volumes:
-      - './api/main.py:/app/main.py'
-      - '${TRANSCRIPTION_VOLUME_DIR}:/app/transcription'
     ports:
       - '8000:8000'
     restart: unless-stopped
